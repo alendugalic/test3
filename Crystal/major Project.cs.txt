@@ -1,0 +1,68 @@
+using UnityEngine;
+
+public class Crystal : MonoBehaviour
+{
+    [SerializeField] private AnimationCurve bobCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+    [SerializeField] private float bobHeight = 0.5f;
+    [SerializeField] private float bobDuration = 2f;
+
+    [SerializeField] private AnimationCurve pulsateCurve = AnimationCurve.EaseInOut(0, 1, 1, 1.2f);
+    [SerializeField] private float pulsateDuration = 1f;
+
+    private Vector3 originalPosition;
+    private Vector3 originalScale;
+
+    private float bobTimer;
+    private float pulsateTimer;
+    private bool bobReverse;
+    private bool pulsateReverse;
+
+    void Start()
+    {
+        // Stores the initial position and scale of the crystal
+        originalPosition = transform.position;
+        originalScale = transform.localScale;
+
+        // Initialize timers (prevents crystals from being synchronised)
+        bobTimer = Random.Range(0f, bobDuration);
+        pulsateTimer = Random.Range(0f, pulsateDuration);
+    }
+
+    void Update()
+    {
+        bobTimer += bobReverse ? -Time.deltaTime : Time.deltaTime;
+        pulsateTimer += pulsateReverse ? -Time.deltaTime : Time.deltaTime;
+
+        // Check for reversing the direction for bobbing
+        if (bobTimer > bobDuration)
+        {
+            bobTimer = bobDuration;
+            bobReverse = true;
+        }
+        else if (bobTimer < 0)
+        {
+            bobTimer = 0;
+            bobReverse = false;
+        }
+
+        // Check for reversing the direction for pulsating
+        if (pulsateTimer > pulsateDuration)
+        {
+            pulsateTimer = pulsateDuration;
+            pulsateReverse = true;
+        }
+        else if (pulsateTimer < 0)
+        {
+            pulsateTimer = 0;
+            pulsateReverse = false;
+        }
+
+        // Bobbing effect
+        float bobValue = bobCurve.Evaluate(bobTimer / bobDuration) * bobHeight;
+        transform.position = new Vector3(originalPosition.x, originalPosition.y + bobValue, originalPosition.z);
+
+        // Pulsating effect
+        float pulsateValue = pulsateCurve.Evaluate(pulsateTimer / pulsateDuration);
+        transform.localScale = originalScale * pulsateValue;
+    }
+}
